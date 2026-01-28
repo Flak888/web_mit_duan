@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Danh Mục</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-light p-4">
+
+<div class="container bg-white p-4 rounded shadow">
+    <h2 class="text-primary text-center mb-4">QUẢN LÝ DANH MỤC</h2>
+
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <input type="text" id="search" class="form-control" placeholder="Tìm kiếm danh mục...">
+        </div>
+        <div class="col-md-8 text-end">
+            <button class="btn btn-primary" id="btnAdd" data-bs-toggle="modal" data-bs-target="#modalDanhMuc">
+                <i class="fas fa-plus"></i> Thêm mới
+            </button>
+        </div>
+    </div>
+
+    <table class="table table-bordered table-hover text-center align-middle">
+        <thead class="table-primary">
+            <tr>
+                <th>Mã DM</th>
+                <th>Tên Danh Mục</th>
+                <th>Mô Tả</th>
+                <th>Hành Động</th>
+            </tr>
+        </thead>
+        <tbody id="danhMucTable">
+            </tbody>
+    </table>
+</div>
+
+<div class="modal fade" id="modalDanhMuc" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Thông tin danh mục</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="idDanhMuc"> 
+                
+                <div class="mb-3">
+                    <label>Tên Danh Mục</label>
+                    <input type="text" id="tenDanhMuc" class="form-control">
+                </div>
+                <div class="mb-3">
+                    <label>Mô Tả</label>
+                    <textarea id="moTa" class="form-control" rows="3"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-primary" id="btnSave">Lưu dữ liệu</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+$(document).ready(function () {
+    
+    // 1. Tải dữ liệu khi mở trang
+    loadDanhMuc();
+
+    function loadDanhMuc() {
+        $.post("danh_muc_api.php", { action: "fetch" }, function (data) {
+            let rows = "";
+            // Parse JSON trả về từ PHP
+            let jsonData = JSON.parse(data); 
+
+            $.each(jsonData, function (i, v) {
+                // CHÚ Ý: SQL của bạn trả về MaDanhMuc, TenDanhMuc, MoTa (Viết Hoa chữ cái đầu)
+                rows += `
+                <tr>
+                    <td>${v.MaDanhMuc}</td> 
+                    <td class="fw-bold text-primary">${v.TenDanhMuc}</td>
+                    <td>${v.MoTa}</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm btnEdit"
+                            data-id="${v.MaDanhMuc}"
+                            data-ten="${v.TenDanhMuc}"
+                            data-mota="${v.MoTa}"><i class="fas fa-edit"></i> Sửa</button>
+                        <button class="btn btn-danger btn-sm btnDelete"
+                            data-id="${v.MaDanhMuc}"><i class="fas fa-trash"></i> Xóa</button>
+                    </td>
+                </tr>`;
+            });
+            $("#danhMucTable").html(rows);
+        });
+    }
+
+    // 2. Xử lý nút THÊM MỚI (Reset form)
+    $("#btnAdd").click(function(){
+        $("#idDanhMuc").val(""); // Xóa ID để biết là đang thêm mới
+        $("#tenDanhMuc").val("");
+        $("#moTa").val("");
+    });
+
+    // 3. Xử lý nút LƯU (Dùng chung cho Thêm và Sửa)
+    $("#btnSave").click(function () {
+        let id = $("#idDanhMuc").val();
+        let action = id ? "update" : "insert"; // Nếu có ID là sửa, không có là thêm
+
+        $.post("danh_muc_api.php", {
+            action: action,
+            id: id,
+            ten: $("#tenDanhMuc").val(),
+            moTa: $("#moTa").val()
+        }, function (response) {
+            // Sau khi lưu xong
+            $("#modalDanhMuc").modal("hide"); // Tắt modal
+            loadDanhMuc(); // Tải lại bảng
+        });
+    });
+
+    // 4. Xử lý nút SỬA (Đẩy dữ liệu lên Modal)
+    $(document).on("click", ".btnEdit", function () {
+        $("#idDanhMuc").val($(this).data("id"));
+        $("#tenDanhMuc").val($(this).data("ten"));
+        $("#moTa").val($(this).data("mota"));
+        $("#modalDanhMuc").modal("show"); // Hiện modal
+    });
+
+    // 5. Xử lý nút XÓA
+    $(document).on("click", ".btnDelete", function () {
+        if (confirm("Bạn có chắc muốn xóa danh mục này không?")) {
+            $.post("danh_muc_api.php", {
+                action: "delete",
+                id: $(this).data("id")
+            }, function () {
+                loadDanhMuc();
+            });
+        }
+    });
+
+    // 6. TÌM KIẾM
+    $("#search").on("keyup", function () {
+        let value = $(this).val().toLowerCase();
+        $("#danhMucTable tr").filter(function () {
+            $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+        });
+    });
+
+});
+</script>
+
+</body>
+</html>
