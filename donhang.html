@@ -6,6 +6,113 @@
     <title>Quản Lý Đơn Hàng</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+    body {
+        font-family: 'Poppins', sans-serif;
+        background-color: #f8f9fc; /* Màu nền trùng với index để trong suốt */
+    }
+
+    /* Card chứa bảng dữ liệu */
+    .container, .container-fluid {
+        background: white !important;
+        border-radius: 20px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        padding: 30px !important;
+        border: none !important;
+        margin-top: 10px;
+    }
+
+    h2 {
+        font-weight: 700;
+        color: #4e73df;
+        text-transform: uppercase;
+        font-size: 1.8rem;
+        margin-bottom: 30px;
+    }
+
+    /* Tìm kiếm & Nút */
+    .form-control {
+        border-radius: 50px;
+        padding: 10px 20px;
+        border: 1px solid #d1d3e2;
+        box-shadow: none;
+    }
+    .form-control:focus {
+        border-color: #4e73df;
+        box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+    }
+
+    .btn {
+        border-radius: 50px;
+        padding: 8px 20px;
+        font-weight: 500;
+        transition: transform 0.2s;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .btn:hover { transform: translateY(-2px); }
+    .btn-primary { background: #4e73df; border: none; }
+    .btn-success { background: #1cc88a; border: none; }
+    .btn-danger { background: #e74a3b; border: none; }
+    .btn-warning { background: #f6c23e; color: white; border: none; }
+
+    /* Bảng dữ liệu đẹp */
+    .table {
+        margin-top: 20px;
+        border-collapse: separate; 
+        border-spacing: 0 10px; /* Tạo khoảng cách giữa các hàng */
+    }
+    
+    .table thead th {
+        border: none;
+        background-color: #f1f3f9;
+        color: #6e707e;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        padding: 15px;
+    }
+
+    .table tbody tr {
+        background: white;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        transition: all 0.2s;
+    }
+
+    .table tbody tr:hover {
+        transform: scale(1.01);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        z-index: 10;
+        position: relative;
+    }
+
+    .table td {
+        border: none;
+        vertical-align: middle;
+        padding: 15px;
+        border-top: 1px solid #f8f9fc;
+        font-size: 0.95rem;
+        color: #5a5c69;
+    }
+
+    /* Làm tròn góc cho hàng đầu và cuối */
+    .table tbody tr td:first-child { border-top-left-radius: 10px; border-bottom-left-radius: 10px; }
+    .table tbody tr td:last-child { border-top-right-radius: 10px; border-bottom-right-radius: 10px; }
+
+    /* Modal */
+    .modal-content {
+        border-radius: 20px;
+        border: none;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+    }
+    .modal-header {
+        border-bottom: 1px solid #f1f3f9;
+        background: #4e73df;
+        color: white;
+        border-radius: 20px 20px 0 0;
+    }
+    .btn-close { filter: invert(1); }
+</style>
 </head>
 <body class="bg-light p-4">
 
@@ -13,30 +120,35 @@
     <h2 class="text-danger text-center mb-4">QUẢN LÝ ĐƠN HÀNG</h2>
 
     <div class="row mb-3">
-        <div class="col-md-3">
-            <input type="text" id="search" class="form-control" placeholder="Tìm mã đơn, tên khách...">
+        <div class="col-md-4">
+            <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                <input type="text" id="search" class="form-control" placeholder="Tìm mã đơn, tên khách, sđt...">
+            </div>
         </div>
-        <div class="col-md-9 text-end">
+        <div class="col-md-8 text-end">
             <button class="btn btn-danger" id="btnAdd" data-bs-toggle="modal" data-bs-target="#modalDonHang">
                 <i class="fas fa-plus"></i> Tạo Đơn Mới
             </button>
         </div>
     </div>
 
-    <table class="table table-bordered table-hover align-middle font-sm">
-        <thead class="table-danger text-center">
-            <tr>
-                <th>Mã ĐH</th>
-                <th>Khách Hàng</th>
-                <th>Người Nhận</th>
-                <th>Tổng Tiền</th>
-                <th>Trạng Thái</th>
-                <th>Ngày Đặt</th>
-                <th>Thao Tác</th>
-            </tr>
-        </thead>
-        <tbody id="tableBody"></tbody>
-    </table>
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle font-sm">
+            <thead class="table-danger text-center">
+                <tr>
+                    <th>Mã ĐH</th>
+                    <th>Khách Hàng</th>
+                    <th>Thông Tin Giao Hàng</th>
+                    <th>Tổng Tiền</th>
+                    <th>Trạng Thái</th>
+                    <th>Ngày Đặt</th>
+                    <th style="width: 180px;">Thao Tác</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
 </div>
 
 <div class="modal fade" id="modalDonHang">
@@ -51,41 +163,73 @@
                 
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label>Khách Hàng (Tài khoản đặt)</label>
+                        <label class="fw-bold">Khách Hàng (Tài khoản)</label>
                         <select id="maKH" class="form-select"></select>
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label>Trạng Thái</label>
+                        <label class="fw-bold">Trạng Thái</label>
                         <select id="trangThai" class="form-select fw-bold">
-                            <option value="Mới đặt">Mới đặt</option>
-                            <option value="Đang xác nhận">Đang xác nhận</option>
-                            <option value="Đang giao hàng">Đang giao hàng</option>
-                            <option value="Đã hoàn thành">Đã hoàn thành</option>
-                            <option value="Đã hủy">Đã hủy</option>
+                            <option value="Mới đặt" class="text-primary">Mới đặt</option>
+                            <option value="Đang xác nhận" class="text-info">Đang xác nhận</option>
+                            <option value="Đang giao hàng" class="text-warning">Đang giao hàng</option>
+                            <option value="Đã hoàn thành" class="text-success">Đã hoàn thành</option>
+                            <option value="Đã hủy" class="text-danger">Đã hủy</option>
                         </select>
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label>Tên Người Nhận</label>
+                        <label class="fw-bold">Tên Người Nhận</label>
                         <input type="text" id="nguoiNhan" class="form-control">
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label>SĐT Nhận Hàng</label>
+                        <label class="fw-bold">SĐT Nhận Hàng</label>
                         <input type="text" id="sdt" class="form-control">
                     </div>
                     <div class="col-md-12 mb-3">
-                        <label>Địa Chỉ Giao</label>
+                        <label class="fw-bold">Địa Chỉ Giao</label>
                         <input type="text" id="diaChi" class="form-control">
                     </div>
                     <div class="col-md-12 mb-3">
-                        <label>Tổng Tiền (VNĐ)</label>
+                        <label class="fw-bold">Tổng Tiền (VNĐ)</label>
                         <input type="number" id="tongTien" class="form-control fw-bold text-danger">
-                        <small class="text-muted">* Tạm thời nhập tay, sau này sẽ tính tự động từ chi tiết đơn.</small>
+                        <small class="text-muted fst-italic">* Nhập tổng tiền cuối cùng của đơn hàng.</small>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
                 <button type="button" class="btn btn-danger" id="btnSave">Lưu Đơn Hàng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalChiTiet">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title"><i class="fas fa-list-ol"></i> Chi Tiết Đơn Hàng #<span id="detailMaDon"></span></h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <table class="table table-striped table-bordered text-center align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Hình ảnh</th>
+                            <th>Tên Sản Phẩm</th>
+                            <th>Số Lượng</th>
+                            <th>Đơn Giá</th>
+                            <th>Thành Tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bodyChiTiet">
+                        </tbody>
+                </table>
+                <div class="text-end mt-3">
+                    <h5 class="text-danger fw-bold">Tổng cộng: <span id="tongTienChiTiet">0</span> ₫</h5>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
             </div>
         </div>
     </div>
@@ -103,36 +247,46 @@ $(document).ready(function () {
     function loadDonHang() {
         $.post("donhang_api.php", { action: "fetch" }, function (data) {
             let rows = "";
-            $.each(JSON.parse(data), function (i, v) {
-                // Định dạng tiền
+            let list = JSON.parse(data); // Parse JSON
+            
+            $.each(list, function (i, v) {
+                // Định dạng tiền tệ VNĐ
                 let tien = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(v.TongTien);
-                // Màu sắc trạng thái
+                
+                // Xử lý màu sắc trạng thái (Badge)
                 let badgeClass = 'bg-secondary';
                 if(v.TrangThai === 'Đã hoàn thành') badgeClass = 'bg-success';
                 if(v.TrangThai === 'Mới đặt') badgeClass = 'bg-primary';
+                if(v.TrangThai === 'Đang giao hàng') badgeClass = 'bg-warning text-dark';
                 if(v.TrangThai === 'Đã hủy') badgeClass = 'bg-danger';
 
                 rows += `
                 <tr>
                     <td class="text-center fw-bold">#${v.MaDonHang}</td>
                     <td>
-                        <span class="fw-bold text-primary">${v.HoTen || 'Khách lẻ'}</span><br>
+                        <span class="fw-bold text-primary">${v.HoTen || 'Khách vãng lai'}</span><br>
                         <small class="text-muted">ID: ${v.MaNguoiDung}</small>
                     </td>
                     <td>
-                        ${v.NguoiNhan}<br>
-                        <small><i class="fas fa-phone"></i> ${v.SDT_Nhan}</small>
+                        <i class="fas fa-user"></i> ${v.NguoiNhan}<br>
+                        <i class="fas fa-phone"></i> ${v.SDT_Nhan}<br>
+                        <i class="fas fa-map-marker-alt"></i> ${v.DiaChiGiao}
                     </td>
                     <td class="text-end fw-bold text-danger">${tien}</td>
                     <td class="text-center"><span class="badge ${badgeClass}">${v.TrangThai}</span></td>
-                    <td class="text-center">${v.NgayDat}</td>
+                    <td class="text-center small">${v.NgayDat}</td>
                     <td class="text-center">
-                        <button class="btn btn-warning btn-sm btnEdit" data-json='${JSON.stringify(v)}'>
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn btn-danger btn-sm btnDelete" data-id="${v.MaDonHang}">
-                            <i class="fas fa-trash"></i>
-                        </button>
+                        <div class="btn-group" role="group">
+                            <button class="btn btn-info btn-sm text-white btnDetail" title="Xem chi tiết" data-id="${v.MaDonHang}">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-warning btn-sm btnEdit" title="Sửa" data-json='${JSON.stringify(v)}'>
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-danger btn-sm btnDelete" title="Xóa" data-id="${v.MaDonHang}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
                     </td>
                 </tr>`;
             });
@@ -140,7 +294,7 @@ $(document).ready(function () {
         });
     }
 
-    // 2. Load danh sách Khách hàng vào Select
+    // 2. Load danh sách Khách hàng vào Select box
     function loadKhachHang() {
         $.post("donhang_api.php", { action: "fetch_khachhang" }, function (data) {
             let options = "";
@@ -151,7 +305,7 @@ $(document).ready(function () {
         });
     }
 
-    // 3. Reset form khi thêm mới
+    // 3. Reset form khi bấm Thêm mới
     $("#btnAdd").click(function(){
         $("#idDH").val("");
         $("#maKH").prop('selectedIndex', 0);
@@ -162,7 +316,7 @@ $(document).ready(function () {
         $("#trangThai").val("Mới đặt");
     });
 
-    // 4. Lưu dữ liệu
+    // 4. Lưu dữ liệu (Thêm hoặc Sửa)
     $("#btnSave").click(function () {
         let id = $("#idDH").val();
         let action = id ? "update" : "insert";
@@ -176,15 +330,15 @@ $(document).ready(function () {
             diaChi: $("#diaChi").val(),
             tongTien: $("#tongTien").val(),
             trangThai: $("#trangThai").val()
-        }, function () {
+        }, function (response) {
             $("#modalDonHang").modal("hide");
             loadDonHang();
         });
     });
 
-    // 5. Đổ dữ liệu lên form để sửa
+    // 5. Đổ dữ liệu lên form để Sửa
     $(document).on("click", ".btnEdit", function () {
-        let data = $(this).data("json");
+        let data = $(this).data("json"); // Lấy dữ liệu từ attribute data-json
         $("#idDH").val(data.MaDonHang);
         $("#maKH").val(data.MaNguoiDung);
         $("#nguoiNhan").val(data.NguoiNhan);
@@ -195,16 +349,57 @@ $(document).ready(function () {
         $("#modalDonHang").modal("show");
     });
 
-    // 6. Xóa đơn hàng
+    // 6. Xử lý nút XEM CHI TIẾT (QUAN TRỌNG)
+    $(document).on("click", ".btnDetail", function () {
+        let maDon = $(this).data("id");
+        $("#detailMaDon").text(maDon);
+        $("#bodyChiTiet").html('<tr><td colspan="5">Đang tải dữ liệu...</td></tr>');
+
+        // Gọi API lấy chi tiết
+        $.post("donhang_api.php", { action: "get_chitiet", id: maDon }, function (data) {
+            let rows = "";
+            let tongCong = 0;
+            let list = JSON.parse(data);
+
+            if(list.length === 0) {
+                rows = '<tr><td colspan="5" class="text-muted">Đơn hàng này chưa có sản phẩm nào.</td></tr>';
+            } else {
+                $.each(list, function (i, v) {
+                    let thanhTien = v.SoLuong * v.DonGia;
+                    tongCong += thanhTien;
+                    
+                    // Hiển thị ảnh nếu có
+                    let imgHtml = v.HinhAnh 
+                        ? `<img src="uploads/${v.HinhAnh}" width="50" height="50" style="object-fit:cover; border-radius:4px;">` 
+                        : '<span class="text-muted small">No Img</span>';
+
+                    rows += `
+                    <tr>
+                        <td>${imgHtml}</td>
+                        <td class="fw-bold text-start">${v.TenSanPham}</td>
+                        <td>${v.SoLuong}</td>
+                        <td>${new Intl.NumberFormat('vi-VN').format(v.DonGia)}</td>
+                        <td class="fw-bold text-danger">${new Intl.NumberFormat('vi-VN').format(thanhTien)}</td>
+                    </tr>`;
+                });
+            }
+            
+            $("#bodyChiTiet").html(rows);
+            $("#tongTienChiTiet").text(new Intl.NumberFormat('vi-VN').format(tongCong));
+            $("#modalChiTiet").modal("show");
+        });
+    });
+
+    // 7. Xóa đơn hàng
     $(document).on("click", ".btnDelete", function () {
-        if(confirm("Xóa đơn hàng này?")) {
+        if(confirm("Bạn có chắc chắn muốn xóa đơn hàng này?")) {
             $.post("donhang_api.php", { action: "delete", id: $(this).data("id") }, function(){
                 loadDonHang();
             });
         }
     });
 
-    // 7. Tìm kiếm
+    // 8. Tìm kiếm
     $("#search").on("keyup", function () {
         let value = $(this).val().toLowerCase();
         $("#tableBody tr").filter(function () {
